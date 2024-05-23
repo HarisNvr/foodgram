@@ -1,46 +1,20 @@
-from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import UniqueConstraint, CheckConstraint, Q, F
-
-
-class ProfileManager(BaseUserManager):
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('role', Profile.ADMIN)
-
-        email = self.normalize_email(email)
-        superuser = self.model(email=email, **extra_fields)
-        superuser.set_password(password)
-        superuser.save(using=self._db)
-        return superuser
+from django.utils.translation import gettext_lazy as _
 
 
 class Profile(AbstractUser):
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-    USER = 'user'
-
-    ROLES = (
-        (ADMIN, 'Admin'),
-        (MODERATOR, 'Moderator'),
-        (USER, 'User')
-    )
-
-    role = models.CharField(
-        max_length=9,
-        choices=ROLES,
-        default=USER,
-        verbose_name='Статус'
-    )
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(
+        _('email address'),
+        blank=False,
+        unique=True,
+        max_length=254
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-
-    objects = ProfileManager()
 
     def __str__(self):
         return self.username
