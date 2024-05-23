@@ -17,7 +17,7 @@ class Profile(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     def __str__(self):
-        return self.username
+        return self.email
 
 
 class Subscription(models.Model):
@@ -29,6 +29,9 @@ class Subscription(models.Model):
     )
 
     class Meta:
+        verbose_name = 'подписка'
+        verbose_name_plural = 'Подписки'
+
         constraints = [
             UniqueConstraint(
                 fields=['user', 'following'],
