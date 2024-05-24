@@ -24,7 +24,7 @@ class ProfileSerializer(UserSerializer):
 
         if request and request.user.is_authenticated:
             return Subscription.objects.filter(
-                user=request.user,
+                follower=request.user,
                 following=obj
             ).exists()
 
