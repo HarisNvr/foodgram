@@ -21,7 +21,7 @@ class Profile(AbstractUser):
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(
+    follower = models.ForeignKey(
         Profile, on_delete=models.CASCADE, related_name='followings'
     )
     following = models.ForeignKey(
@@ -34,11 +34,11 @@ class Subscription(models.Model):
 
         constraints = [
             UniqueConstraint(
-                fields=['user', 'following'],
+                fields=['follower', 'following'],
                 name='unique_following_constraint'
             ),
             CheckConstraint(
-                check=~Q(user=F('following')),
+                check=~Q(follower=F('following')),
                 name='self_following_check_constraint'
             )
         ]
