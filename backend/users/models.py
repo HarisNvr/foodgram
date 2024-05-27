@@ -6,6 +6,16 @@ from django.utils.translation import gettext_lazy as _
 
 class Profile(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    first_name = models.CharField(
+        _('first name'),
+        max_length=150,
+        blank=False
+    )
+    last_name = models.CharField(
+        _('last name'),
+        max_length=150,
+        blank=False
+    )
     email = models.EmailField(
         _('email address'),
         blank=False,
@@ -14,31 +24,35 @@ class Profile(AbstractUser):
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = [
+        'username',
+        'first_name',
+        'last_name',
+    ]
 
     def __str__(self):
         return self.email
 
 
 class Subscription(models.Model):
-    follower = models.ForeignKey(
-        Profile, on_delete=models.CASCADE, related_name='followings'
+    user = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name='followings'
     )
-    following = models.ForeignKey(
-        Profile, on_delete=models.CASCADE, related_name='followers'
+    author = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name='followers'
     )
 
     class Meta:
-        verbose_name = 'подписка'
-        verbose_name_plural = 'Подписки'
-
+        ordering = ['-id']
         constraints = [
             UniqueConstraint(
-                fields=['follower', 'following'],
-                name='unique_following_constraint'
-            ),
-            CheckConstraint(
-                check=~Q(follower=F('following')),
-                name='self_following_check_constraint'
+                fields=['user', 'author'],
+                name='unique_subscription'
             )
         ]
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

@@ -24,8 +24,29 @@ class ProfileSerializer(UserSerializer):
 
         if request and request.user.is_authenticated:
             return Subscription.objects.filter(
-                follower=request.user,
-                following=obj
+                user=request.user,
+                author=obj
             ).exists()
 
         return False
+
+
+class SubscriptionSerializer(ProfileSerializer):
+    # recipes = serializers.SerializerMethodField()
+    # recipes_count = serializers.SerializerMethodField()
+
+    class Meta(ProfileSerializer.Meta):
+        fields = ProfileSerializer.Meta.fields  # + ('recipes',
+        # 'recipes_count')
+        read_only_fields = ('email', 'username', 'first_name', 'last_name')
+
+    # def get_recipes(self, obj):
+    #     request = self.context.get('request')
+    #     limit = request.GET.get('recipes_limit')
+    #     queryset = Recipe.objects.filter(author=obj.author)
+    #     if limit:
+    #         queryset = queryset[:int(limit)]
+    #     return CropRecipeSerializer(queryset, many=True).data
+    #
+    # def get_recipes_count(self, obj):
+    #     return Recipe.objects.filter(author=obj.author).count()

@@ -16,6 +16,6 @@ class ProfileAdmin(UserAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('follower', 'following')
-    search_fields = ('follower__username', 'following__username')
-    list_filter = ('follower__username', 'following__username')
+    list_display = ('user', 'author')
+    search_fields = ('user__username', 'author__username')
+    list_filter = ('user__username', 'author__username')
