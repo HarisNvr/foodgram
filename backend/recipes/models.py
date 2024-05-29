@@ -32,6 +32,8 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField('Название', max_length=200)
+    short_link = models.CharField('Короткая ссылка', max_length=100,
+                                  blank=True, unique=True)
     author = models.ForeignKey(
         Profile,
         related_name='recipes',

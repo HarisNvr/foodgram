@@ -1,9 +1,12 @@
+import hashlib
 from datetime import datetime
 
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
+
 from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
                             ShoppingCart, Tag)
 from rest_framework import status
@@ -23,6 +26,21 @@ from recipes.serializers import (
     TagSerializer
 )
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
+
+
+def redirect_to_recipe(request, recipe_hash):
+    try:
+        recipe = Recipe.objects.get(short_link=recipe_hash)
+        redirect_url = '/recipes/' + str(recipe.pk) + '/'
+        return redirect(redirect_url)
+    except Recipe.DoesNotExist:
+        return HttpResponse(status=404)
+
+
+def generate_short_link(recipe_id):
+    hash_object = hashlib.md5(str(recipe_id).encode())
+    short_hash = hash_object.hexdigest()[:3]
+    return f'http://127.0.0.1:8000/s/{short_hash}'
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
@@ -54,6 +72,19 @@ class RecipeViewSet(ModelViewSet):
         if self.request.method in SAFE_METHODS:
             return RecipeReadSerializer
         return RecipeWriteSerializer
+
+    @action(detail=True, methods=['get'], url_path='get-link')
+    def get_link(self, request, pk=None):
+        recipe = self.get_object()
+        if not recipe.short_link:
+            short_link = generate_short_link(recipe.id)
+            recipe.short_link = short_link
+            recipe.save()
+        else:
+            recipe_hash = recipe.short_link
+            short_link = f'http://127.0.0.1:8000/s/{recipe_hash}'
+
+        return Response({'short-link': short_link})
 
     @action(
         detail=True,
