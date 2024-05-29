@@ -1,14 +1,44 @@
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Subscription, Profile
 from .pagination import ProfilePagination
-from .serializers import SubscriptionSerializer
+from .serializers import AvatarSerializer
+from api.serializers import SubscriptionSerializer
+
+
+@api_view(['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def profile_avatar(request):
+    user = request.user
+
+    if request.method == 'PUT':
+        serializer = AvatarSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user.avatar = serializer.validated_data['avatar']
+            user.save()
+            avatar_url = request.build_absolute_uri(user.avatar.url)
+            return Response(
+                {'avatar': avatar_url},
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        user.avatar = None
+        user.save()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
+    else:
+        return MethodNotAllowed(request.method)
 
 
 class ProfileViewSet(UserViewSet):
@@ -17,7 +47,6 @@ class ProfileViewSet(UserViewSet):
     @action(detail=False, permission_classes=[IsAuthenticated])
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
-
         if request.method == 'GET':
             return self.retrieve(request, *args, **kwargs)
         else:
@@ -31,7 +60,7 @@ class ProfileViewSet(UserViewSet):
         serializer = SubscriptionSerializer(
             author,
             data=request.data,
-            context={"request": request}
+            context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
 
