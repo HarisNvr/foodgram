@@ -12,7 +12,7 @@ class SubscriptionSerializer(ProfileSerializer):
         fields = ProfileSerializer.Meta.fields + (
             'recipes_count', 'recipes'
         )
-        read_only_fields = ('email', 'username')
+        read_only_fields = ('email', 'username', 'first_name', 'last_name')
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
