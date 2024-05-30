@@ -4,7 +4,6 @@ from datetime import datetime
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 
 from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
@@ -28,6 +27,9 @@ from recipes.serializers import (
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 
+SITE_URL = 'http://127.0.0.1:8000'
+
+
 def redirect_to_recipe(request, recipe_hash):
     try:
         recipe = Recipe.objects.get(short_link=recipe_hash)
@@ -35,12 +37,6 @@ def redirect_to_recipe(request, recipe_hash):
         return redirect(redirect_url)
     except Recipe.DoesNotExist:
         return HttpResponse(status=404)
-
-
-def generate_short_link(recipe_id):
-    hash_object = hashlib.md5(str(recipe_id).encode())
-    short_hash = hash_object.hexdigest()[:3]
-    return f'http://127.0.0.1:8000/s/{short_hash}'
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
@@ -76,13 +72,15 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        if not recipe.short_link:
-            short_link = generate_short_link(recipe.id)
-            recipe.short_link = short_link
+        if not recipe.short_link_hash:
+            hash_object = hashlib.md5(str(recipe.id).encode())
+            recipe_hash = hash_object.hexdigest()[:3]
+            recipe.short_link_hash = recipe_hash
             recipe.save()
         else:
-            recipe_hash = recipe.short_link
-            short_link = f'http://127.0.0.1:8000/s/{recipe_hash}'
+            recipe_hash = recipe.short_link_hash
+
+        short_link = f'{SITE_URL}/s/{recipe_hash}'
 
         return Response({'short-link': short_link})
 
@@ -110,19 +108,23 @@ class RecipeViewSet(ModelViewSet):
 
     def add_to(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
-            return Response({'errors': 'Рецепт уже добавлен!'},
+            return Response({'errors': 'Рецепт уже добавлен'},
                             status=status.HTTP_400_BAD_REQUEST)
+
         recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
         serializer = RecipeShortSerializer(recipe)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_from(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
+
         if obj.exists():
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({'errors': 'Рецепт уже удален!'},
+
+        return Response({'errors': 'Рецепт не найден'},
                         status=status.HTTP_400_BAD_REQUEST)
 
     @action(

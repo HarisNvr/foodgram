@@ -30,6 +30,11 @@ class Profile(AbstractUser):
         'last_name',
     ]
 
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'профиль'
+        verbose_name_plural = 'Профили пользователей'
+
     def __str__(self):
         return self.email
 
@@ -54,5 +59,5 @@ class Subscription(models.Model):
                 name='unique_subscription'
             )
         ]
-        verbose_name = 'Подписка'
+        verbose_name = 'подписку'
         verbose_name_plural = 'Подписки'

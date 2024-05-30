@@ -10,7 +10,7 @@ class Ingredient(models.Model):
     measurement_unit = models.CharField('Единица измерения', max_length=200)
 
     class Meta:
-        verbose_name = 'Ингредиент'
+        verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ['name']
 
@@ -23,7 +23,7 @@ class Tag(models.Model):
     slug = models.SlugField('Уникальный слаг', unique=True, max_length=200)
 
     class Meta:
-        verbose_name = 'Тег'
+        verbose_name = 'тег'
         verbose_name_plural = 'Теги'
 
     def __str__(self):
@@ -32,9 +32,9 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField('Название', max_length=200)
-    short_link = models.CharField(
-        'Короткая ссылка',
-        max_length=100,
+    short_link_hash = models.CharField(
+        'Хэш короткой ссылки',
+        max_length=10,
         blank=True
     )
     author = models.ForeignKey(
@@ -67,7 +67,7 @@ class Recipe(models.Model):
 
     class Meta:
         ordering = ['-id']
-        verbose_name = 'Рецепт'
+        verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
@@ -92,7 +92,7 @@ class IngredientInRecipe(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Ингредиент в рецепте'
+        verbose_name = 'ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецептах'
 
     def __str__(self):
@@ -117,8 +117,8 @@ class Favourite(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Избранное'
-        verbose_name_plural = 'Избранное'
+        verbose_name = 'избранное'
+        verbose_name_plural = 'Избранное пользователей'
         constraints = [
             UniqueConstraint(fields=['user', 'recipe'],
                              name='unique_favourite')
@@ -143,8 +143,8 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Корзина покупок'
-        verbose_name_plural = 'Корзина покупок'
+        verbose_name = 'корзину'
+        verbose_name_plural = 'Корзина покупок пользователей'
         constraints = [
             UniqueConstraint(
                 fields=['user', 'recipe'],
