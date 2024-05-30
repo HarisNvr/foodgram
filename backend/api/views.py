@@ -27,7 +27,7 @@ from recipes.serializers import (
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 
-SITE_URL = 'http://127.0.0.1:8000'
+SITE_URL = 'foodgram.serveftp.com'
 
 
 def redirect_to_recipe(request, recipe_hash):
