@@ -551,7 +551,7 @@
 							"response": []
 						},
 						{
-							"name": "user_registration_without_password_name",
+							"name": "user_registration_without_password",
 							"event": [
 								{
 									"listen": "test",
@@ -8955,11 +8955,12 @@
 											"pm.test(\"Статус-код ответа должен быть 400\", function () {",
 											"    pm.expect(",
 											"        pm.response.status,",
-											"        \"При попытке добавить несуществующий рецепт в корзину должен вернуться ответ со статусом 400\"",
-											"    ).to.be.eql(\"Bad Request\");",
+											"        \"При попытке добавить несуществующий рецепт в корзину должен вернуться ответ со статусом 404\"",
+											"    ).to.be.eql(\"Not Found\");",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -9216,11 +9217,12 @@
 											"pm.test(\"Статус-код ответа должен быть 400\", function () {",
 											"    pm.expect(",
 											"        pm.response.status,",
-											"        \"При попытке добавить несуществующий рецепт в избранное должен вернуться ответ со статусом 400\"",
-											"    ).to.be.eql(\"Bad Request\");",
+											"        \"При попытке добавить несуществующий рецепт в избранное должен вернуться ответ со статусом 404\"",
+											"    ).to.be.eql(\"Not Found\");",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
