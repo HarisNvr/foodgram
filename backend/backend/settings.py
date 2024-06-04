@@ -1,7 +1,10 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 from django.core.management.utils import get_random_secret_key
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,7 +17,7 @@ ALLOWED_HOSTS = os.getenv(
     'localhost,'
     '127.0.0.1,'
     '158.160.88.226,'
-    'foodgram.serveftp.com'
+    'foodgram.servehalflife.com'
 ).split(',')
 
 AUTH_USER_MODEL = 'users.Profile'
