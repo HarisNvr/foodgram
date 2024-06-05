@@ -32,8 +32,8 @@ SITE_URL = 'foodgram.servehalflife.com'
 
 def redirect_to_recipe(request, recipe_hash):
     try:
-        recipe = Recipe.objects.get(short_link=recipe_hash)
-        redirect_url = '/recipes/' + str(recipe.pk) + '/'
+        recipe = Recipe.objects.get(short_link_hash=recipe_hash)
+        redirect_url = '/recipes/' + str(recipe.pk)
         return redirect(redirect_url)
     except Recipe.DoesNotExist:
         return HttpResponse(status=404)
