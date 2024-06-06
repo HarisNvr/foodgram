@@ -22,6 +22,9 @@ class SubscriptionSerializer(ProfileSerializer):
         limit = request.GET.get('recipes_limit')
         recipes = obj.recipes.all()
         if limit:
-            recipes = recipes[:int(limit)]
+            try:
+                recipes = recipes[:int(limit)]
+            except ValueError:
+                pass
         serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
         return serializer.data

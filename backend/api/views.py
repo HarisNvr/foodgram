@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
@@ -31,12 +31,9 @@ SITE_URL = 'foodgram.servehalflife.com'
 
 
 def redirect_to_recipe(request, recipe_hash):
-    try:
-        recipe = Recipe.objects.get(short_link_hash=recipe_hash)
-        redirect_url = '/recipes/' + str(recipe.pk)
-        return redirect(redirect_url)
-    except Recipe.DoesNotExist:
-        return HttpResponse(status=404)
+    recipe = get_object_or_404(Recipe, short_link_hash=recipe_hash)
+    redirect_url = '/recipes/' + str(recipe.pk)
+    return redirect(redirect_url)
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
@@ -86,25 +83,27 @@ class RecipeViewSet(ModelViewSet):
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
+        methods=['post'],
         permission_classes=[IsAuthenticated]
     )
     def favorite(self, request, pk):
-        if request.method == 'POST':
-            return self.add_to(Favourite, request.user, pk)
-        else:
-            return self.delete_from(Favourite, request.user, pk)
+        return self.add_to(Favourite, request.user, pk)
+
+    @favorite.mapping.delete
+    def delete_favorite(self, request, pk):
+        return self.delete_from(Favourite, request.user, pk)
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
+        methods=['post'],
         permission_classes=[IsAuthenticated]
     )
     def shopping_cart(self, request, pk):
-        if request.method == 'POST':
-            return self.add_to(ShoppingCart, request.user, pk)
-        else:
-            return self.delete_from(ShoppingCart, request.user, pk)
+        return self.add_to(ShoppingCart, request.user, pk)
+
+    @shopping_cart.mapping.delete
+    def delete_shopping_cart(self, request, pk):
+        return self.delete_from(ShoppingCart, request.user, pk)
 
     def add_to(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
@@ -122,19 +121,14 @@ class RecipeViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_from(self, model, user, pk):
-        try:
-            recipe = Recipe.objects.get(id=pk)
-        except Recipe.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        recipe = get_object_or_404(Recipe, id=pk)
+        obj = model.objects.filter(user=user, recipe=recipe).delete()
 
-        obj = model.objects.filter(user=user, recipe=recipe)
-
-        if obj.exists():
-            obj.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response({'errors': 'Рецепт не найден'},
+        if obj == (0, {}):
+            return Response({'errors': 'Рецепт не найден'},
                         status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
