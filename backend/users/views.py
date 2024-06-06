@@ -26,7 +26,7 @@ def profile_avatar(request):
             avatar_url = request.build_absolute_uri(user.avatar.url)
             return Response(
                 {'avatar': avatar_url},
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_200_OK
             )
         else:
             return Response(serializer.errors,

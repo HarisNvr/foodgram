@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend
 
 from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
@@ -111,14 +111,23 @@ class RecipeViewSet(ModelViewSet):
             return Response({'errors': 'Рецепт уже добавлен'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        recipe = get_object_or_404(Recipe, id=pk)
+        try:
+            recipe = Recipe.objects.get(id=pk)
+        except Recipe.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         model.objects.create(user=user, recipe=recipe)
         serializer = RecipeShortSerializer(recipe)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_from(self, model, user, pk):
-        obj = model.objects.filter(user=user, recipe__id=pk)
+        try:
+            recipe = Recipe.objects.get(id=pk)
+        except Recipe.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        obj = model.objects.filter(user=user, recipe=recipe)
 
         if obj.exists():
             obj.delete()
