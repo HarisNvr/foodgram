@@ -5,9 +5,6 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-
-from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingCart, Tag)
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
@@ -15,19 +12,25 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .filters import IngredientFilter, RecipeFilter
-from .pagination import RecipePagination
+from .serializers import RecipeShortSerializer
+from .constants import SITE_URL
+from recipes.models import (
+    Favourite,
+    Ingredient,
+    IngredientInRecipe,
+    Recipe,
+    ShoppingCart,
+    Tag
+)
+from recipes.filters import IngredientFilter, RecipeFilter
+from recipes.pagination import RecipePagination
 from recipes.serializers import (
     IngredientSerializer,
     RecipeReadSerializer,
-    RecipeShortSerializer,
     RecipeWriteSerializer,
     TagSerializer
 )
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-
-
-SITE_URL = 'foodgram.servehalflife.com'
 
 
 def redirect_to_recipe(request, recipe_hash):

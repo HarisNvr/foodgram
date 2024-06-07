@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from .models import Subscription, Profile
 from .pagination import ProfilePagination
 from .serializers import AvatarSerializer
-from api.serializers import SubscriptionSerializer
+from .serializers import SubscriptionSerializer
 
 
 @api_view(['PUT', 'DELETE'])

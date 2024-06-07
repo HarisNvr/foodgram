@@ -1,1 +1,1 @@
-PAGE_SIZE = 6
+SITE_URL = 'foodgram.servehalflife.com'

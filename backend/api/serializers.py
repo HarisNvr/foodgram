@@ -1,30 +1,17 @@
-from rest_framework.fields import SerializerMethodField
+from drf_extra_fields.fields import Base64ImageField
+from rest_framework.serializers import ModelSerializer
 
-from users.serializers import ProfileSerializer
-from recipes.serializers import RecipeShortSerializer
+from recipes.models import Recipe
 
 
-class SubscriptionSerializer(ProfileSerializer):
-    recipes_count = SerializerMethodField()
-    recipes = SerializerMethodField()
+class RecipeShortSerializer(ModelSerializer):
+    image = Base64ImageField()
 
-    class Meta(ProfileSerializer.Meta):
-        fields = ProfileSerializer.Meta.fields + (
-            'recipes_count', 'recipes'
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
         )
-        read_only_fields = ('email', 'username', 'first_name', 'last_name')
-
-    def get_recipes_count(self, obj):
-        return obj.recipes.count()
-
-    def get_recipes(self, obj):
-        request = self.context.get('request')
-        limit = request.GET.get('recipes_limit')
-        recipes = obj.recipes.all()
-        if limit:
-            try:
-                recipes = recipes[:int(limit)]
-            except ValueError:
-                pass
-        serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
-        return serializer.data
