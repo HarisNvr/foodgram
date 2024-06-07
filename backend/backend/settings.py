@@ -12,13 +12,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
 
 DEBUG = os.getenv('DEBUG', '').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv(
-    'ALLOWED_HOSTS',
-    'localhost,'
-    '127.0.0.1,'
-    '158.160.88.226,'
-    'foodgram.servehalflife.com'
-).split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 AUTH_USER_MODEL = 'users.Profile'
 
@@ -35,9 +29,9 @@ INSTALLED_APPS = [
     'djoser',
     'django_filters',
 
-    'api.apps.ApiConfig',
-    'recipes.apps.RecipesConfig',
     'users.apps.UsersConfig',
+    'recipes.apps.RecipesConfig',
+    'api.apps.ApiConfig',
 ]
 
 REST_FRAMEWORK = {
