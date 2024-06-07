@@ -37,8 +37,6 @@ def profile_avatar(request):
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
-    else:
-        return MethodNotAllowed(request.method)
 
 
 class ProfileViewSet(UserViewSet):

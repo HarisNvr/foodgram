@@ -13,13 +13,13 @@ from users.serializers import ProfileSerializer
 class IngredientSerializer(ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = ('id', 'name', 'measurement_unit')
 
 
 class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name', 'slug')
 
 
 class RecipeReadSerializer(ModelSerializer):
@@ -56,16 +56,24 @@ class RecipeReadSerializer(ModelSerializer):
         return ingredients
 
     def get_is_favorited(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return user.favorites.filter(recipe=obj).exists()
+        request = self.context.get('request')
+        user = request.user if request else None
+
+        return (
+                user and
+                user.is_authenticated and
+                user.favorites.filter(recipe=obj).exists()
+        )
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return user.shopping_cart.filter(recipe=obj).exists()
+        request = self.context.get('request')
+        user = request.user if request else None
+
+        return (
+                user and
+                user.is_authenticated and
+                user.shopping_cart.filter(recipe=obj).exists()
+        )
 
 
 class IngredientInRecipeWriteSerializer(ModelSerializer):

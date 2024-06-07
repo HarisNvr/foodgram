@@ -1,11 +1,10 @@
-from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from .models import Profile, Subscription
 
 
-class ProfileSerializer(UserSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -21,19 +20,19 @@ class ProfileSerializer(UserSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        request = self.context.get('request', None)
+        request = self.context.get('request')
 
-        if request and request.user.is_authenticated:
-            return Subscription.objects.filter(
-                user=request.user,
-                author=obj
-            ).exists()
-
-        return False
+        return (
+                request and
+                request.user.is_authenticated and
+                Subscription.objects.filter(
+                    user=request.user,
+                    author=obj
+                ).exists()
+        )
 
 
 class AvatarSerializer(serializers.ModelSerializer):
-
     avatar = Base64ImageField(allow_null=True)
 
     class Meta:

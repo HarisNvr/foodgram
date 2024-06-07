@@ -1,26 +1,23 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import UniqueConstraint
-from django.utils.translation import gettext_lazy as _
+
+from .constants import NAME_LENGTH, LAST_NAME_LENGTH
 
 
 class Profile(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     first_name = models.CharField(
-        _('first name'),
-        max_length=150,
+        max_length=NAME_LENGTH,
         blank=False
     )
     last_name = models.CharField(
-        _('last name'),
-        max_length=150,
+        max_length=LAST_NAME_LENGTH,
         blank=False
     )
     email = models.EmailField(
-        _('email address'),
         blank=False,
-        unique=True,
-        max_length=254
+        unique=True
     )
 
     USERNAME_FIELD = 'email'
@@ -31,7 +28,7 @@ class Profile(AbstractUser):
     ]
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['first_name', 'last_name', 'username', 'email']
         verbose_name = 'профиль'
         verbose_name_plural = 'Профили пользователей'
 
@@ -52,7 +49,7 @@ class Subscription(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['user', 'author']
         constraints = [
             UniqueConstraint(
                 fields=['user', 'author'],
