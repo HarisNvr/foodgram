@@ -29,7 +29,7 @@ class ProfileSerializer(serializers.ModelSerializer):
                     user=request.user,
                     author=obj
                 ).exists()
-        )
+                )
 
 
 class AvatarSerializer(serializers.ModelSerializer):
