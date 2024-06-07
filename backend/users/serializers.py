@@ -66,3 +66,20 @@ class SubscriptionSerializer(ProfileSerializer):
                 pass
         serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
         return serializer.data
+
+    def validate(self, data):
+        request = self.context.get('request')
+        user = request.user
+        author = self.instance
+
+        if user == author:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя'
+            )
+
+        if Subscription.objects.filter(user=user, author=author).exists():
+            raise serializers.ValidationError(
+                 'Вы уже подписаны на данного пользователя'
+            )
+
+        return data

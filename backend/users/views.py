@@ -36,20 +36,8 @@ class ProfileViewSet(UserViewSet):
         )
         serializer.is_valid(raise_exception=True)
 
-        if user == author:
-            return Response(
-                {'errors': 'Нельзя подписаться на самого себя'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if Subscription.objects.filter(user=user, author=author).exists():
-            return Response(
-                {'errors': 'Вы уже подписаны на данного пользователя'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        else:
-            Subscription.objects.create(user=user, author=author)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        Subscription.objects.create(user=user, author=author)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def del_subscribe(self, request, id=None):
