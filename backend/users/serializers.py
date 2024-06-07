@@ -24,10 +24,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
 
-        return (
-                request and
-                request.user.is_authenticated and
-                Subscription.objects.filter(
+        return (request and request.user.is_authenticated
+                and Subscription.objects.filter(
                     user=request.user,
                     author=obj
                 ).exists()
@@ -79,7 +77,7 @@ class SubscriptionSerializer(ProfileSerializer):
 
         if Subscription.objects.filter(user=user, author=author).exists():
             raise serializers.ValidationError(
-                 'Вы уже подписаны на данного пользователя'
+                'Вы уже подписаны на данного пользователя'
             )
 
         return data

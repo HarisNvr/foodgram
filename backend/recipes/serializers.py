@@ -59,8 +59,8 @@ class RecipeReadSerializer(ModelSerializer):
         request = self.context.get('request')
         user = request.user if request else None
 
-        return (user and user.is_authenticated and
-                user.favorites.filter(recipe=obj).exists())
+        return (user and user.is_authenticated
+                and user.favorites.filter(recipe=obj).exists())
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
@@ -79,7 +79,11 @@ class IngredientInRecipeWriteSerializer(ModelSerializer):
 
 
 class RecipeWriteSerializer(ModelSerializer):
-    tags = PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, required=True)
+    tags = PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True,
+        required=True
+    )
     author = ProfileSerializer(read_only=True)
     ingredients = IngredientInRecipeWriteSerializer(many=True, required=True)
     image = Base64ImageField(required=True)

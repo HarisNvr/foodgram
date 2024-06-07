@@ -127,7 +127,7 @@ class RecipeViewSet(ModelViewSet):
 
         if obj == (0, {}):
             return Response({'errors': 'Рецепт не найден'},
-                        status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
