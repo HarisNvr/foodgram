@@ -1,0 +1,28 @@
+name,slug
+Завтрак, breakfast
+Обед, lunch
+Ужин, dinner
+Перекус, snack
+Бранч, brunch
+Второй завтрак, second_breakfast
+Полноценный обед, full_meal
+Легкая закуска, light_appetizer
+Быстрый перекус, quick_bite
+Поздний ужин, late_supper
+Простой завтрак, simple_breakfast
+Обеденная тарелка, lunch_plate
+Традиционный ужин, traditional_dinner
+Здоровый перекус, healthy_snack
+Полденный обед, midday_meal
+Плотный ужин, hearty_dinner
+Перекус на ходу, on_the_go_snack
+Ужин на скорую руку, quick_dinner
+Перекус без мяса, meatless_snack
+Энергетический завтрак, energy_boosting_breakfast
+Пикник на обед, picnic_lunch
+Сытный ужин, satisfying_dinner
+Перекус с фруктами, fruit_snack
+Легкий ужин, light_dinner
+Простой обед, easy_lunch
+Фруктовый перекус, fruit_break
+Ужин вне дома, dinner_out
