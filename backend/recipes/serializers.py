@@ -85,8 +85,7 @@ class IngredientInRecipeWriteSerializer(ModelSerializer):
 
 
 class RecipeWriteSerializer(ModelSerializer):
-    tags = PrimaryKeyRelatedField(queryset=Tag.objects.all(),
-                                  many=True, required=True)
+    tags = PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, required=True)
     author = ProfileSerializer(read_only=True)
     ingredients = IngredientInRecipeWriteSerializer(many=True, required=True)
     image = Base64ImageField(required=True)
@@ -104,48 +103,42 @@ class RecipeWriteSerializer(ModelSerializer):
             'cooking_time',
         )
 
-    def validate_image(self, value):
-        if not value:
+    def validate(self, data):
+        validated_data = super().validate(data)
+
+        if not validated_data.get('image'):
             raise ValidationError(
                 {'image': 'Не предоставлена картинка рецепта'}
             )
 
-        return value
-
-    def validate_ingredients(self, value):
-        if not value:
+        ingredients = validated_data.get('ingredients', [])
+        if not ingredients:
             raise ValidationError(
                 {'ingredients': 'Нужен хотя бы один ингредиент'}
             )
-
         ingredients_list = []
-
-        for item in value:
+        for item in ingredients:
             try:
                 ingredient = Ingredient.objects.get(id=item['id'])
             except Ingredient.DoesNotExist:
                 raise ValidationError(
                     {'ingredients': 'Такого ингредиента нет в нашей базе'}
                 )
-
             if ingredient in ingredients_list:
                 raise ValidationError(
-                    {'ingredients': 'Ингридиенты не могут повторяться'}
+                    {'ingredients': 'Ингредиенты не могут повторяться'}
                 )
-
             if int(item['amount']) <= 0:
                 raise ValidationError(
-                    {'amount': 'Количество ингредиента должно быть больше 0!'}
+                    {'amount': 'Количество ингредиента должно быть больше 0'}
                 )
-
             ingredients_list.append(ingredient)
 
-        return value
-
-    def validate_tags(self, value):
-        tags = value
+        tags = validated_data.get('tags', [])
         if not tags:
-            raise ValidationError({'tags': 'Нужно выбрать хотя бы один тег!'})
+            raise ValidationError(
+                {'tags': 'Нужно выбрать хотя бы один тег!'}
+            )
         tags_list = []
         for tag in tags:
             if tag in tags_list:
@@ -153,7 +146,8 @@ class RecipeWriteSerializer(ModelSerializer):
                     {'tags': 'Теги должны быть уникальными!'}
                 )
             tags_list.append(tag)
-        return value
+
+        return validated_data
 
     @transaction.atomic
     def create_ingredients_amounts(self, ingredients, recipe):
