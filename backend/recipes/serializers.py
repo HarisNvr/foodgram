@@ -165,39 +165,48 @@ class RecipeWriteSerializer(ModelSerializer):
             ) for ingredient in ingredients]
         )
 
-    @transaction.atomic
     def create(self, validated_data):
+        request = self.context.get('request')
+        author = request.user
+
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(**validated_data)
+
+        recipe = Recipe.objects.create(author=author, **validated_data)
         recipe.tags.set(tags)
-        self.create_ingredients_amounts(recipe=recipe, ingredients=ingredients)
+        self.create_ingredients_amounts(
+            recipe=recipe,
+            ingredients=ingredients
+        )
+
         return recipe
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        if 'tags' in validated_data:
-            tags = validated_data.pop('tags')
-        else:
+        if 'tags' not in validated_data:
             raise ValidationError(
                 {'tags': 'Нужно выбрать хотя бы один тег!'}
             )
 
-        if 'ingredients' in validated_data:
-            ingredients = validated_data.pop('ingredients')
-        else:
+        if 'ingredients' not in validated_data:
             raise ValidationError(
                 {'ingredients': 'Нужен хотя бы один ингредиент'}
             )
 
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+
         instance = super().update(instance, validated_data)
+
         instance.tags.clear()
         instance.tags.set(tags)
+
         instance.ingredients.clear()
         self.create_ingredients_amounts(
             recipe=instance,
             ingredients=ingredients
         )
+
         instance.save()
         return instance
 

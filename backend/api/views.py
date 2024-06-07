@@ -2,8 +2,8 @@ import hashlib
 from datetime import datetime
 
 from django.db.models import Sum
-from django.http import HttpResponse
-from django.shortcuts import redirect, get_object_or_404
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
@@ -35,8 +35,9 @@ from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 def redirect_to_recipe(request, recipe_hash):
     recipe = get_object_or_404(Recipe, short_link_hash=recipe_hash)
-    redirect_url = '/recipes/' + str(recipe.pk)
-    return redirect(redirect_url)
+    relative_url = '/recipes/' + str(recipe.pk) + '/'
+    full_url = request.build_absolute_uri(relative_url)
+    return HttpResponseRedirect(full_url)
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
@@ -60,9 +61,6 @@ class RecipeViewSet(ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
