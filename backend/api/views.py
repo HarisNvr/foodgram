@@ -29,7 +29,7 @@ from .serializers import (
     RecipeWriteSerializer,
     TagSerializer
 )
-from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
+from .permissions import IsAuthorAdminOrReadOnly
 
 
 def redirect_to_recipe(request, recipe_hash):
@@ -55,7 +55,7 @@ class TagViewSet(ReadOnlyModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthorOrReadOnly | IsAdminOrReadOnly,)
+    permission_classes = (IsAuthorAdminOrReadOnly,)
     pagination_class = FoodGramPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
