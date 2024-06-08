@@ -6,12 +6,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Subscription, Profile
-from .pagination import ProfilePagination
-from .serializers import AvatarSerializer, SubscriptionSerializer
+from api.pagination import FoodGramPagination
+from api.serializers import AvatarSerializer, SubscriptionSerializer
 
 
 class ProfileViewSet(UserViewSet):
-    pagination_class = ProfilePagination
+    pagination_class = FoodGramPagination
 
     @action(
         detail=False,

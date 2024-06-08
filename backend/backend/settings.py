@@ -50,8 +50,8 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'SERIALIZERS': {
-        'user': 'users.serializers.ProfileSerializer',
-        'current_user': 'users.serializers.ProfileSerializer',
+        'user': 'api.serializers.ProfileSerializer',
+        'current_user': 'api.serializers.ProfileSerializer',
     },
 
     'PERMISSIONS': {

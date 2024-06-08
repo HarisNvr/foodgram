@@ -22,15 +22,15 @@ from recipes.models import (
     ShoppingCart,
     Tag
 )
-from recipes.filters import IngredientFilter, RecipeFilter
-from recipes.pagination import RecipePagination
-from recipes.serializers import (
+from .filters import IngredientFilter, RecipeFilter
+from .pagination import FoodGramPagination
+from .serializers import (
     IngredientSerializer,
     RecipeReadSerializer,
     RecipeWriteSerializer,
     TagSerializer
 )
-from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 
 def redirect_to_recipe(request, recipe_hash):
@@ -57,7 +57,7 @@ class TagViewSet(ReadOnlyModelViewSet):
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrReadOnly | IsAdminOrReadOnly,)
-    pagination_class = RecipePagination
+    pagination_class = FoodGramPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
