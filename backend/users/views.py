@@ -48,12 +48,6 @@ class ProfileViewSet(UserViewSet):
             author=author
         ).delete()
 
-        if user == author:
-            return Response(
-                {'errors': 'Нельзя отписаться от самого себя'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         if subscription == (0, {}):
             return Response(
                 {'errors': 'Вы не подписаны на этого пользователя'},
