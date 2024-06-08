@@ -1,3 +1,5 @@
+import hashlib
+
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
@@ -104,6 +106,12 @@ class Recipe(models.Model):
         ordering = ['name', 'author', 'cooking_time']
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        recipe_hash = hashlib.md5(str(self.id).encode()).hexdigest()[:5]
+        self.short_link_hash = recipe_hash
+        super().save(update_fields=['short_link_hash'])
 
     def __str__(self):
         return self.name

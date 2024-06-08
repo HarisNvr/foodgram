@@ -1,9 +1,9 @@
-import hashlib
 from datetime import datetime
 
 from django.db.models import Sum
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
@@ -13,7 +13,6 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .serializers import RecipeShortSerializer
-from .constants import SITE_URL
 from recipes.models import (
     Favourite,
     Ingredient,
@@ -70,15 +69,13 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        if not recipe.short_link_hash:
-            hash_object = hashlib.md5(str(recipe.id).encode())
-            recipe_hash = hash_object.hexdigest()[:3]
-            recipe.short_link_hash = recipe_hash
-            recipe.save()
-        else:
-            recipe_hash = recipe.short_link_hash
-
-        short_link = f'{SITE_URL}/s/{recipe_hash}'
+        recipe_hash = recipe.short_link_hash
+        short_link = request.build_absolute_uri(
+            reverse(
+                'short-link-redirect',
+                args=[recipe_hash]
+            )
+        )
 
         return Response({'short-link': short_link})
 
