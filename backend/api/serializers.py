@@ -1,6 +1,5 @@
 from django.db import transaction
 from django.db.models import F
-from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import IntegerField, SerializerMethodField
@@ -170,11 +169,30 @@ class RecipeReadSerializer(ModelSerializer):
 
 
 class IngredientInRecipeWriteSerializer(ModelSerializer):
-    id = IntegerField(write_only=True, required=True)
+    id = IntegerField(required=True)
+    amount = IntegerField(required=True)
 
     class Meta:
         model = IngredientInRecipe
         fields = ('id', 'amount')
+
+    def validate(self, value):
+        ingredient_id = value.get('id')
+        amount = value.get('amount')
+
+        try:
+            Ingredient.objects.get(id=ingredient_id)
+        except Ingredient.DoesNotExist:
+            raise ValidationError(
+                {'ingredients': 'Такого ингредиента нет в нашей базе'}
+            )
+
+        if amount <= 0:
+            raise ValidationError(
+                {'amount': 'Количество ингредиента должно быть больше 0'}
+            )
+
+        return value
 
 
 class RecipeWriteSerializer(ModelSerializer):
@@ -209,34 +227,32 @@ class RecipeWriteSerializer(ModelSerializer):
             )
 
         ingredients = validated_data.get('ingredients', [])
+
         if not ingredients:
             raise ValidationError(
                 {'ingredients': 'Нужен хотя бы один ингредиент'}
             )
+
         ingredients_list = []
-        for item in ingredients:
-            try:
-                ingredient = Ingredient.objects.get(id=item['id'])
-            except Ingredient.DoesNotExist:
-                raise ValidationError(
-                    {'ingredients': 'Такого ингредиента нет в нашей базе'}
-                )
+
+        for ingredient in ingredients:
+
             if ingredient in ingredients_list:
                 raise ValidationError(
                     {'ingredients': 'Ингредиенты не могут повторяться'}
                 )
-            if int(item['amount']) <= 0:
-                raise ValidationError(
-                    {'amount': 'Количество ингредиента должно быть больше 0'}
-                )
+
             ingredients_list.append(ingredient)
 
         tags = validated_data.get('tags', [])
+
         if not tags:
             raise ValidationError(
                 {'tags': 'Нужно выбрать хотя бы один тег!'}
             )
+
         tags_list = []
+
         for tag in tags:
             if tag in tags_list:
                 raise ValidationError(
@@ -246,15 +262,17 @@ class RecipeWriteSerializer(ModelSerializer):
 
         return validated_data
 
+    @staticmethod
     @transaction.atomic
-    def create_ingredients_amounts(self, ingredients, recipe):
-        IngredientInRecipe.objects.bulk_create(
-            [IngredientInRecipe(
-                ingredient=Ingredient.objects.get(id=ingredient['id']),
+    def create_ingredients_amounts(ingredients, recipe):
+        ingredient_instances = [
+            IngredientInRecipe(
+                ingredient_id=ingredient['id'],
                 recipe=recipe,
                 amount=ingredient['amount']
-            ) for ingredient in ingredients]
-        )
+            ) for ingredient in ingredients
+        ]
+        IngredientInRecipe.objects.bulk_create(ingredient_instances)
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -274,31 +292,22 @@ class RecipeWriteSerializer(ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        if 'tags' not in validated_data:
-            raise ValidationError(
-                {'tags': 'Нужно выбрать хотя бы один тег!'}
-            )
-
-        if 'ingredients' not in validated_data:
-            raise ValidationError(
-                {'ingredients': 'Нужен хотя бы один ингредиент'}
-            )
-
-        tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredients')
+        tags_data = validated_data.pop('tags', None)
+        ingredients_data = validated_data.pop('ingredients', None)
 
         instance = super().update(instance, validated_data)
 
-        instance.tags.clear()
-        instance.tags.set(tags)
+        if tags_data is not None:
+            instance.tags.clear()
+            instance.tags.set(tags_data)
 
-        instance.ingredients.clear()
-        self.create_ingredients_amounts(
-            recipe=instance,
-            ingredients=ingredients
-        )
+        if ingredients_data is not None:
+            instance.ingredients.clear()
+            self.create_ingredients_amounts(
+                recipe=instance,
+                ingredients=ingredients_data
+            )
 
-        instance.save()
         return instance
 
     def to_representation(self, instance):
