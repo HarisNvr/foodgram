@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.db.models import F
+from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import IntegerField, SerializerMethodField
@@ -8,7 +9,14 @@ from rest_framework.serializers import ModelSerializer
 
 
 from users.models import Profile, Subscription
-from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
+from recipes.models import (
+    Ingredient,
+    IngredientInRecipe,
+    Recipe,
+    Tag,
+    ShoppingCart,
+    Favourite
+)
 
 
 class ProfileSerializer(ModelSerializer):
@@ -297,3 +305,47 @@ class RecipeWriteSerializer(ModelSerializer):
         request = self.context.get('request')
         context = {'request': request}
         return RecipeReadSerializer(instance, context=context).data
+
+
+class FavoriteSerializer(ModelSerializer):
+    class Meta:
+        model = Favourite
+        fields = ('user', 'recipe',)
+
+    def validate(self, data):
+        user = data['user']
+        recipe = data['recipe']
+
+        if user.favorites.filter(recipe=recipe.id).exists():
+            raise ValidationError(
+                'Рецепт уже добавлен в избранное.'
+            )
+        return data
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe,
+            context={'request': self.context.get('request')}
+        ).data
+
+
+class ShoppingCartSerializer(ModelSerializer):
+    class Meta:
+        model = ShoppingCart
+        fields = ('user', 'recipe',)
+
+    def validate(self, data):
+        user = data['user']
+        recipe = data['recipe']
+
+        if user.shopping_cart.filter(recipe=recipe.id).exists():
+            raise ValidationError(
+                f'Рецепт уже добавлен в корзину'
+            )
+        return data
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe,
+            context={'request': self.context.get('request')}
+        ).data
