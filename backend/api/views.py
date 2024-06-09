@@ -97,16 +97,16 @@ class RecipeViewSet(ModelViewSet):
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        obj = Favourite.objects.filter(
+        deleted_count, _ = Favourite.objects.filter(
             user=request.user,
             recipe=recipe
         ).delete()
 
-        if obj == (0, {}):
+        if deleted_count == 0:
             return Response({'errors': 'Рецепт не найден в вашем избранном'},
                             status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
@@ -126,16 +126,16 @@ class RecipeViewSet(ModelViewSet):
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        obj = ShoppingCart.objects.filter(
+        deleted_count, _ = ShoppingCart.objects.filter(
             user=request.user,
             recipe=recipe
         ).delete()
 
-        if obj == (0, {}):
+        if deleted_count == 0:
             return Response({'errors': 'Рецепт не найден в вашей корзине'},
                             status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
