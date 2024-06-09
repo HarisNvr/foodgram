@@ -114,19 +114,14 @@ class ProfileViewSet(UserViewSet):
     def avatar(self, request):
         user = request.user
         serializer = AvatarSerializer(data=request.data)
-        if serializer.is_valid():
-            user.avatar = serializer.validated_data['avatar']
-            user.save()
-            avatar_url = request.build_absolute_uri(user.avatar.url)
-            return Response(
-                {'avatar': avatar_url},
-                status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
+        user.avatar = serializer.validated_data['avatar']
+        user.save()
+        avatar_url = request.build_absolute_uri(user.avatar.url)
+        return Response(
+            {'avatar': avatar_url},
+            status=status.HTTP_200_OK
+        )
 
     @avatar.mapping.delete
     def delete_avatar(self, request):
