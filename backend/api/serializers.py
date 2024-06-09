@@ -2,8 +2,7 @@ from django.db import transaction
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import IntegerField, SerializerMethodField, \
-    ImageField
+from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
 
@@ -293,10 +292,15 @@ class RecipeWriteSerializer(ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        tags_data = validated_data.pop('tags')
-        ingredients_data = validated_data.pop('ingredients')
-        instance = super().update(instance, validated_data)
-        return instance
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+
+        instance.tags.clear()
+        IngredientInRecipe.objects.filter(recipe=instance).delete()
+        instance.tags.set(tags)
+
+        self.create_ingredients_amounts(ingredients, instance)
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         request = self.context.get('request')
