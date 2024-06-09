@@ -179,30 +179,15 @@ class RecipeReadSerializer(ModelSerializer):
 
 
 class IngredientInRecipeWriteSerializer(ModelSerializer):
-    id = IntegerField(required=True)
-    amount = IntegerField(required=True)
+    id = PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        source='ingredient',
+        required=True
+    )
 
     class Meta:
         model = IngredientInRecipe
         fields = ('id', 'amount')
-
-    def validate(self, value):
-        ingredient_id = value.get('id')
-        amount = value.get('amount')
-
-        try:
-            Ingredient.objects.get(id=ingredient_id)
-        except Ingredient.DoesNotExist:
-            raise ValidationError(
-                {'ingredients': 'Такого ингредиента нет в нашей базе'}
-            )
-
-        if amount <= 0:
-            raise ValidationError(
-                {'amount': 'Количество ингредиента должно быть больше 0'}
-            )
-
-        return value
 
 
 class RecipeWriteSerializer(ModelSerializer):
@@ -277,7 +262,7 @@ class RecipeWriteSerializer(ModelSerializer):
     def create_ingredients_amounts(ingredients, recipe):
         ingredient_instances = [
             IngredientInRecipe(
-                ingredient_id=ingredient['id'],
+                ingredient=ingredient['ingredient'],
                 recipe=recipe,
                 amount=ingredient['amount']
             ) for ingredient in ingredients
@@ -302,22 +287,9 @@ class RecipeWriteSerializer(ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        tags_data = validated_data.pop('tags', None)
-        ingredients_data = validated_data.pop('ingredients', None)
-
+        tags_data = validated_data.pop('tags')
+        ingredients_data = validated_data.pop('ingredients')
         instance = super().update(instance, validated_data)
-
-        if tags_data is not None:
-            instance.tags.clear()
-            instance.tags.set(tags_data)
-
-        if ingredients_data is not None:
-            instance.ingredients.clear()
-            self.create_ingredients_amounts(
-                recipe=instance,
-                ingredients=ingredients_data
-            )
-
         return instance
 
     def to_representation(self, instance):
