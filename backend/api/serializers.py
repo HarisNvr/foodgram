@@ -110,6 +110,12 @@ class SubscriptionSerializer(ModelSerializer):
 
         return data
 
+    def create(self, validated_data):
+        user = validated_data['user']
+        author = validated_data['author']
+        subscription = Subscription.objects.create(user=user, author=author)
+        return subscription
+
     def to_representation(self, instance):
         user_subscription_serializer = UserSubscriptionSerializer(
             instance.author,

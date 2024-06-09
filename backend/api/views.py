@@ -61,17 +61,18 @@ class ProfileViewSet(UserViewSet):
         author = get_object_or_404(Profile, id=self.kwargs.get('id'))
 
         serializer = SubscriptionSerializer(
-            data={'user': user.id, 'author': author.id},
+            data={'author': author.id,
+                  'user': user.id},
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-
-        Subscription.objects.create(user=user, author=author)
+        serializer.save(user=user)
 
         user_subscription_serializer = UserSubscriptionSerializer(
             author,
             context={'request': request}
         )
+
         return Response(user_subscription_serializer.data,
                         status=status.HTTP_201_CREATED)
 
