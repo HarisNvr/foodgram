@@ -14,7 +14,8 @@ from .constants import (
     COOKING_TIME_MIN,
     COOKING_TIME_MAX,
     INGREDIENT_AMOUNT_MIN,
-    INGREDIENT_AMOUNT_MAX
+    INGREDIENT_AMOUNT_MAX,
+    SHORT_LINK_HASH
 )
 
 
@@ -62,7 +63,7 @@ class Recipe(models.Model):
     name = models.CharField('Название', max_length=RECIPE_NAME)
     short_link_hash = models.CharField(
         'Хэш короткой ссылки',
-        max_length=10,
+        max_length=SHORT_LINK_HASH,
         blank=True
     )
     author = models.ForeignKey(
@@ -109,7 +110,11 @@ class Recipe(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        recipe_hash = hashlib.md5(str(self.id).encode()).hexdigest()[:5]
+        recipe_hash = hashlib.md5(
+            str(
+                self.id
+            ).encode()
+        ).hexdigest()[:SHORT_LINK_HASH]
         self.short_link_hash = recipe_hash
         super().save(update_fields=['short_link_hash'])
 
