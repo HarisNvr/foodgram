@@ -1,5 +1,4 @@
 import os
-import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -11,12 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
 
-if sys.platform == 'win32':
-    DEBUG = True
-else:
-    DEBUG = os.getenv('DEBUG', '').lower() == 'true'
+DEBUG = os.getenv('DEBUG', '').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
+ALLOWED_HOSTS = '*'
 
 AUTH_USER_MODEL = 'users.Profile'
 
@@ -91,7 +87,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-if sys.platform == 'win32':
+if os.getenv('POSTGRES_DB_CHOICE') == '0':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
