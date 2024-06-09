@@ -80,18 +80,19 @@ class ProfileViewSet(UserViewSet):
     def del_subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(Profile, id=id)
-        subscription = Subscription.objects.filter(
+
+        deleted_count, _ = Subscription.objects.filter(
             user=user,
             author=author
         ).delete()
 
-        if subscription == (0, {}):
+        if deleted_count == 0:
             return Response(
                 {'errors': 'Вы не подписаны на этого пользователя'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
