@@ -2,10 +2,10 @@ from django.db import transaction
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import IntegerField, SerializerMethodField
+from rest_framework.fields import IntegerField, SerializerMethodField, \
+    ImageField
 from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
-
 
 from users.models import Profile, Subscription
 from recipes.models import (
@@ -65,17 +65,18 @@ class RecipeShortSerializer(ModelSerializer):
         )
 
 
-class SubscriptionSerializer(ProfileSerializer):
+class UserSubscriptionSerializer(ProfileSerializer):
     recipes_count = SerializerMethodField()
     recipes = SerializerMethodField()
 
-    class Meta(ProfileSerializer.Meta):
-        fields = ProfileSerializer.Meta.fields + (
-            'recipes_count', 'recipes'
-        )
+    class Meta:
+        model = Profile
+        fields = ('id', 'username', 'first_name', 'last_name', 'email',
+                  'avatar', 'is_subscribed', 'recipes_count', 'recipes')
         read_only_fields = ('email', 'username', 'first_name', 'last_name')
 
-    def get_recipes_count(self, obj):
+    @staticmethod
+    def get_recipes_count(obj):
         return obj.recipes.count()
 
     def get_recipes(self, obj):
@@ -90,22 +91,31 @@ class SubscriptionSerializer(ProfileSerializer):
         serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
         return serializer.data
 
+
+class SubscriptionSerializer(ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ('user', 'author')
+
     def validate(self, data):
         request = self.context.get('request')
         user = request.user
-        author = self.instance
+        author = data['author']
 
         if user == author:
-            raise ValidationError(
-                'Нельзя подписаться на самого себя'
-            )
+            raise ValidationError('Нельзя подписаться на самого себя')
 
         if Subscription.objects.filter(user=user, author=author).exists():
-            raise ValidationError(
-                'Вы уже подписаны на данного пользователя'
-            )
+            raise ValidationError('Вы уже подписаны на данного пользователя')
 
         return data
+
+    def to_representation(self, instance):
+        user_subscription_serializer = UserSubscriptionSerializer(
+            instance.author,
+            context=self.context
+        )
+        return user_subscription_serializer.data
 
 
 class IngredientSerializer(ModelSerializer):

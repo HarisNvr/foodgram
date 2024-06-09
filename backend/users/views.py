@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from .models import Subscription, Profile
 from api.pagination import FoodGramPagination
-from api.serializers import AvatarSerializer, SubscriptionSerializer
+from api.serializers import AvatarSerializer, SubscriptionSerializer, UserSubscriptionSerializer
 
 
 class ProfileViewSet(UserViewSet):
@@ -29,15 +29,21 @@ class ProfileViewSet(UserViewSet):
     def subscribe(self, request, **kwargs):
         user = request.user
         author = get_object_or_404(Profile, id=self.kwargs.get('id'))
+
         serializer = SubscriptionSerializer(
-            author,
-            data=request.data,
+            data={'user': user.id, 'author': author.id},
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
 
         Subscription.objects.create(user=user, author=author)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        user_subscription_serializer = UserSubscriptionSerializer(
+            author,
+            context={'request': request}
+        )
+        return Response(user_subscription_serializer.data,
+                        status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def del_subscribe(self, request, id=None):
@@ -59,7 +65,7 @@ class ProfileViewSet(UserViewSet):
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         queryset = Profile.objects.filter(followers__user=request.user)
-        serializer = SubscriptionSerializer(
+        serializer = UserSubscriptionSerializer(
             self.paginate_queryset(queryset),
             many=True,
             context={'request': request}
