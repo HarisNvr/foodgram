@@ -109,18 +109,11 @@ class SubscriptionSerializer(ModelSerializer):
 
         return data
 
-    def create(self, validated_data):
-        user = validated_data['user']
-        author = validated_data['author']
-        subscription = Subscription.objects.create(user=user, author=author)
-        return subscription
-
     def to_representation(self, instance):
-        user_subscription_serializer = UserSubscriptionSerializer(
+        return UserSubscriptionSerializer(
             instance.author,
             context=self.context
-        )
-        return user_subscription_serializer.data
+        ).data
 
 
 class IngredientSerializer(ModelSerializer):
@@ -296,10 +289,11 @@ class RecipeWriteSerializer(ModelSerializer):
         tags = validated_data.pop('tags')
 
         instance.tags.clear()
-        IngredientInRecipe.objects.filter(recipe=instance).delete()
-        instance.tags.set(tags)
+        instance.ingredients.clear()
 
+        instance.tags.set(tags)
         self.create_ingredients_amounts(ingredients, instance)
+
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
