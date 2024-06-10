@@ -69,7 +69,7 @@ sudo docker compose exec backend python manage.py createsuperuser
 sudo docker compose exec backend python manage.py collectstatic --noinput
 ```
 
-- Наполнить базу данных содержимым из файла ingredients.csv:
+- Наполнить базу данных содержимым:
 ```
 sudo docker compose exec backend python manage.py importcsv
 ```
