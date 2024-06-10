@@ -68,13 +68,7 @@ class ProfileViewSet(UserViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(user=user)
 
-        user_subscription_serializer = UserSubscriptionSerializer(
-            author,
-            context={'request': request}
-        )
-
-        return Response(user_subscription_serializer.data,
-                        status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def del_subscribe(self, request, id=None):
