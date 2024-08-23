@@ -2,12 +2,6 @@
 
 Foodgram - продуктовый помощник с базой кулинарных рецептов. Позволяет публиковать рецепты, сохранять избранные, а также формировать список покупок для выбранных рецептов. Можно подписываться на любимых авторов.
 
-Проект доступен по [адресу](https://foodgram.servehalflife.com)
-
-Документация к API доступна [здесь](https://foodgram.servehalflife.com/api/docs/)
-
-В документации описаны возможные запросы к API и структура ожидаемых ответов. Для каждого запроса указаны уровни прав доступа.
-
 ### Технологии:
 
 Python, Django, Django Rest Framework, Docker, Gunicorn, NGINX, PostgreSQL, Yandex Cloud, Continuous Integration, Continuous Deployment
